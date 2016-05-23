@@ -2,7 +2,7 @@ var _ = require('lodash');
 var ee = require('event-emitter');
 var path = require('path');
 
-var OUTLET_CONIFG = 'outlet.json';
+var OUTLET_CONFIG = 'outlet.json';
 
 var defaults = {
 	'connect': {
