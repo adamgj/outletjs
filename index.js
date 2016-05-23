@@ -29,8 +29,49 @@ function Outlet(opt)
 		conf: conf,
 		handler: handler,
 		devices: devices,
-		connect: connect
+		connect: connect,
+		on: on,
+		trigger: trigger
 	});
+
+	function trigger(event) {
+		var args = _.drop(arguments, 1);
+
+		handler.emit(event, args);
+
+		return this;
+	}
+
+	function load(device) {
+		if (!device.path) {
+			throw new Error('Device not connected: '+JSON.stringify(device));
+		}
+
+		device.device = require(device.path);
+
+		return device;
+	}
+
+	function on(name, args) {
+		args = args ? args : {};
+
+		// turn on all devices
+		if (!name || name == '*') {
+			_.forEach(devices, function(device) {
+				var onArgs = args;
+				onArgs.name = device.name;
+				onArgs.path = device.path;
+				device = load(device);
+				if (device.device.on) {
+					device.device.on(this, onArgs);
+				}
+			});
+		}
+
+		// TODO: find device by name
+
+		return this;
+	}
 
 	function connect(name) {
 		var device = null;
