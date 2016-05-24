@@ -1,0 +1,17 @@
+{
+  "name": "outlet-example",
+  "version": "0.1.1",
+  "description": "Outlet example app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "outlet"
+  ],
+  "author": "adamgj",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "outletjs": "^0.2.0"
+  }
+}
