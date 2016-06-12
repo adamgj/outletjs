@@ -27,7 +27,7 @@ function Device(nameIn, dirIn)
 {
 	var name = nameIn;
 	var dir = dirIn; 
-	var description, conf, uses, listeners, keywords;
+	var description, conf, uses, listeners, workflows, keywords;
 
 	return({
 		name: name,
@@ -36,6 +36,7 @@ function Device(nameIn, dirIn)
 		conf: conf,
 		uses: uses,
 		listeners: listeners,
+		workflows: workflows,
 		keywords: keywords,
 		load: load
 	});
@@ -72,7 +73,7 @@ function Device(nameIn, dirIn)
 		device = _.assign(device,
 			require(device.dir),
 			_.pick(package, ['name', 'version', 'description', 'keywords']),
-			_.pick(package.device, ['conf', 'uses', 'listeners'])
+			_.pick(package.device, ['conf', 'uses', 'listeners', 'workflows'])
 			);
 		
 		// remove prefix (ie. device-test -> test)
@@ -106,16 +107,99 @@ function Outlet(opt)
 		devices: devices,
 		connect: connect,
 		disconnect: disconnect,
-		trigger: trigger
+		trigger: trigger,
+		flow: flow
 	});
 
-	function trigger(event, args) {
+	function createStack(input) {
+		var stackBefore = [];
+		var stack = [];
+		var stackAfter = [];
+		var arr = _.split(input, '/');
+
+		var i, s;
+
+		// create before and middle stacks
+		for (i = 0; i <= arr.length; i++) {
+			s = _.join(_.take(arr, i), '/');
+			if (!_.isEmpty(s)) {
+				stackBefore.push(s+':before');
+				stack.push(s);
+			}
+			if (i < arr.length) {
+				s = _.isEmpty(s) ? '*' : s+'/*';
+				stackBefore.push(s+':before');
+				stack.push(s);
+			}	
+		}
+
+		// create after stack in reverse order
+		for (i = arr.length; i >= 0; i--) {
+			s = _.join(_.take(arr, i), '/');
+			if (i < arr.length) {
+				var wild = _.isEmpty(s) ? '*' : s+'/*';
+				stackAfter.push(wild+':after');
+			}
+			if (!_.isEmpty(s)) {
+				stackAfter.push(s+':after');
+			}
+		}
+
+		// merge stacks
+		stack = _.concat(stackBefore, stack, stackAfter);
+
+		return stack;
+	}
+
+	function flow(names, args) {
+		var funcs = [];
+		var outlet = this;
+
+		// build trigger stack
+		var stack = createStack(names);
+
+		_.forEach(stack, function(name) {
+			_.forEach(devices, function(device) {
+				if (_.isArray(device.workflows)) {
+					_.forEach(device.workflows, function(workflow) {
+						// poly support for simple string def or object
+						var action = _.isString(workflow) ? workflow : workflow.action;
+						var trigger = _.isString(workflow) ? workflow : workflow.trigger;
+						if (trigger === name) {
+							var func = device[action];
+							// add function to the action stack
+							funcs.push(function(o, a) { func(o, a); });
+						}
+					});
+				}
+			});
+		});
+
+		// setup next control flow
+		function next(o, a) {
+			var func = funcs.shift();
+			if (func){
+				o.next = next;
+				func(o, a);
+			}
+		}
+		// initiate control flow
+		next(this, args);
+
+		return this;
+	}
+
+	function trigger(events, args) {
 		// init if not defined
 		args = args?args:{};
 		// add extra args passed
 		args.args = _.drop(arguments, 2);
 
-		handler.emit(event, this, args);
+		var stack = createStack(events);
+
+		_.forEach(stack, function(event){
+			handler.emit(event, this, args);
+		});
 
 		return this;
 	}
