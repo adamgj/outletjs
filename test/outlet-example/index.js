@@ -3,7 +3,15 @@ var outlet = require('outletjs')();
 outlet
 	.connect('test')
 	.connect('test2')
-	.trigger('test');
+	.trigger('test')
+	.trigger('one/two/three/four/five');
+
+outlet.conf.set('device:test:increment:step', 10);
+var args = {count: 10};
+outlet.flow('math/count/inc', args);
+console.log(args);
+
+console.log(outlet.conf.get('outlet'));
 
 // test device connected
 console.log(JSON.stringify(outlet.devices));

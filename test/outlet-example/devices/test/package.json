@@ -1,11 +1,24 @@
 {
   "name": "device-test",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "test device",
   "device": {
     "conf": {
-      "test": "value"
+      "test": "value",
+      "increment": {
+        "step": 1
+      }
     },
+    "workflows": [
+      {
+        "trigger": "math/count/inc",
+        "action": "increment"
+      },
+      {
+        "trigger": "dontRun",
+        "action": "dontRun"
+      }
+    ],
     "listeners": [
       {
         "emit": "on",
