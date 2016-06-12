@@ -5,11 +5,14 @@ var path = require('path');
 var OUTLET_CONFIG = 'outlet.json';
 
 var defaults = {
-	'connect': {
-		'path': 'devices',
-		'node_modules': true,
-		'prefix': 'device-'
-	}
+	'outlet' : {
+		'connect': {
+			'path': 'devices',
+			'node_modules': true,
+			'prefix': 'device-'
+		}
+	},
+	'device': {}
 };
 
 
@@ -54,20 +57,27 @@ function Device(nameIn, dirIn)
 				throw new Error('Device name or path must be specified');
 			}
 
-			try {
-				device.dir = path.join(process.cwd(), '/node_modules/', device.name);
-				package = require(path.join(device.dir, '/package.json'));
-			}
-			catch (err) {
-				// TODO: from config
+			if (defaults.outlet.connect.node_modules) {
 				try {
-					device.dir = path.join(process.cwd(), defaults.connect.path, device.name);
-					package = require(path.join(this.dir, '/package.json'));
+					requireDevice('/node_modules');
 				}
-				catch (e) {
-					console.error('Device not found: '+device.name);
+				catch (err) {
+					try {
+						requireDevice(defaults.outlet.connect.path);
+					}
+					catch (e) {
+						console.error('Device not found: '+device.name);
+					}
 				}
 			}
+			else {
+				requireDevice(defaults.outlet.connect.path);
+			}
+		}
+
+		function requireDevice(folder) {
+			device.dir = path.join(process.cwd(), folder, device.name);
+			package = require(path.join(device.dir, '/package.json'));
 		}
 
 		device = _.assign(device,
@@ -77,7 +87,7 @@ function Device(nameIn, dirIn)
 			);
 		
 		// remove prefix (ie. device-test -> test)
-		device.name = _.trimStart(device.name, defaults.connect.prefix);
+		device.name = _.trimStart(device.name, defaults.outlet.connect.prefix);
 
 		_.forEach(device, function(prop) {
 			this[prop] = prop;
@@ -91,6 +101,7 @@ function Outlet(opt)
 {
 	var devices = [];
 	var registry = {};
+	var defaultConf = defaults;
 
 	// init new event emitter
 	var handler = ee();
@@ -215,8 +226,11 @@ function Outlet(opt)
 			});
 		}
 
-		// FIXME
-		var dconf = {"device": {}[device.name] = device.conf};
+		// load current defaults conf
+		var dconf = defaultConf;
+		// namespace device conf under 'device' and name
+		dconf.device[device.name] = device.conf;
+		// apply new conf defaults
 		this.conf.defaults(dconf);
 
 		// add device to registry
