@@ -1,6 +1,6 @@
 {
   "name": "outletjs",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Plugin architecture",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,11 @@
   },
   "author": "Adam Jones",
   "license": "UNLICENSED",
+  "repository": "https://github.com/adamgj/outletjs",
+  "bugs": {
+    "url": "https://github.com/adamgj/outletjs/issues"
+  },
+  "keywords": ["plugin", "workflow", "outlet"],
   "dependencies": {
     "event-emitter": "^0.3.4",
     "lodash": "^4.13.0",
