@@ -66,12 +66,21 @@ function Device(nameIn, dirIn)
 						requireDevice(defaults.outlet.plug.path);
 					}
 					catch (e) {
-						console.error('Device not found: '+device.name);
+						console.error('Could not load device: \n\t... /node_modules/'+device.name+
+							'\n\t... '+path.join(defaults.outlet.plug.path, device.name));
+						throw err;
 					}
 				}
 			}
 			else {
-				requireDevice(defaults.outlet.plug.path);
+				try {
+					requireDevice(defaults.outlet.plug.path);
+				}
+				catch (e) {
+					console.error('Could not load device: \n\t... '+
+						path.join(defaults.outlet.plug.path, device.name));
+					throw e;
+				}
 			}
 		}
 
@@ -83,7 +92,7 @@ function Device(nameIn, dirIn)
 		device = _.assign(device,
 			require(device.dir),
 			_.pick(package, ['name', 'version', 'description', 'keywords']),
-			_.pick(package.device, ['settings', 'uses', 'listeners', 'wiring'])
+			_.pick(package.device, ['settings', 'uses', 'wiring'])
 			);
 		
 		// remove prefix (ie. device-test -> test)
@@ -118,8 +127,7 @@ function Outlet(opt)
 		devices: devices,
 		plug: plug,
 		unplug: unplug,
-		trigger: trigger,
-		flow: flow
+		trigger: trigger
 	});
 
 	function createStack(input) {
@@ -162,9 +170,14 @@ function Outlet(opt)
 		return stack;
 	}
 
-	function flow(names, args) {
+	function trigger(names, args) {
 		var funcs = [];
 		var outlet = this;
+
+		// init if not defined
+		args = args?args:{};
+		// add extra args passed
+		args.args = _.drop(arguments, 2);
 
 		// build trigger stack
 		var stack = createStack(names);
@@ -176,7 +189,9 @@ function Outlet(opt)
 						// poly support for simple string def or object
 						var action = _.isString(workflow) ? workflow : workflow.action;
 						var trigger = _.isString(workflow) ? workflow : workflow.trigger;
-						if (trigger === name) {
+						// default to workflow type
+						var type = _.isString(workflow.type) ? workflow.type : "workflow";
+						if (trigger === name && type == "workflow") {
 							var func = device[action];
 							// add function to the action stack
 							funcs.push(function(o, a) { func(o, a); });
@@ -197,17 +212,6 @@ function Outlet(opt)
 		// initiate control flow
 		next(this, args);
 
-		return this;
-	}
-
-	function trigger(events, args) {
-		// init if not defined
-		args = args?args:{};
-		// add extra args passed
-		args.args = _.drop(arguments, 2);
-
-		var stack = createStack(events);
-
 		_.forEach(stack, function(event){
 			handler.emit(event, this, args);
 		});
@@ -220,9 +224,14 @@ function Outlet(opt)
 		var device = Device(name).load();
 
 		// register all listeners
-		if (_.isArray(device.listeners)) {
-			_.forEach(device.listeners, function(listener) {
-				registerListener(handler, listener.emit, listener.trigger, device[listener.action]);
+		if (_.isArray(device.wiring)) {
+			_.forEach(device.wiring, function(listener) {
+				// event become 'on'
+				var emit = listener.type == "event" ? "on" : listener.type;
+				// add listener w/ valid type
+				if (emit == "on" || emit == "once") {
+					registerListener(handler, emit, listener.trigger, device[listener.action]);
+				}
 			});
 		}
 

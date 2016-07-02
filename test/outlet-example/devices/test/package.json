@@ -11,21 +11,21 @@
     },
     "wiring": [
       {
+        "type": "workflow",
         "trigger": "math/count/inc",
         "action": "increment"
       },
       {
         "trigger": "dontRun",
         "action": "dontRun"
-      }
-    ],
-    "listeners": [
+      },
       {
-        "emit": "on",
+        "type": "event",
         "trigger": "plug",
         "action": "devicePlugged"
       },
       {
+        "type": "once",
         "trigger": "test",
         "action": "test"
       }

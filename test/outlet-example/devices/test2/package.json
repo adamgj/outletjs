@@ -8,17 +8,17 @@
     },
     "wiring": [
       {
+        "type": "workflow",
         "trigger": "math/count/inc",
         "action": "increment"
-      }
-    ],
-    "listeners": [
+      },
       {
-        "emit": "on",
+        "type": "event",
         "trigger": "plug",
         "action": "devicePlugged"
       },
       {
+        "type": "once",
         "trigger": "test",
         "action": "test"
       }

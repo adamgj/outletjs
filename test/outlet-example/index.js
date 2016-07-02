@@ -8,7 +8,7 @@ outlet
 
 outlet.settings.set('device:test:increment:step', 10);
 var args = {count: 10};
-outlet.flow('math/count/inc', args);
+outlet.trigger('math/count/inc', args);
 console.log(args);
 
 console.log(outlet.settings.get('outlet'));
@@ -22,6 +22,12 @@ console.log(outlet.devices[0].name+
 // test device config loaded
 console.log(outlet.settings.get('device:test'));
 console.log(outlet.settings.get('device:test2'));
+
+try {
+	outlet.plug('doesnotexist');
+} catch (e) {
+	console.log(e.stack);
+}
 
 outlet.unplug('test');
 
