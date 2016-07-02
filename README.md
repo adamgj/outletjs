@@ -11,7 +11,7 @@ Example
 ```
 outlet.trigger('math/count/inc');
 ```
-Triggers the follow event stack. Events are emitted in order and can be listened to at any level.
+Triggers the follow stack. Calls an ordered control flow stack with passable arguments between functions in the stack. After the control flow registered listeners are called with the arguments object.
 ```
 [ '*:before',
   'math:before',
@@ -36,7 +36,7 @@ Triggers the follow event stack. Events are emitted in order and can be listened
 Trigger the control flow with initial arguments and log our results
 ```
 var args = {count: 1};
-outlet.flow('math/count/inc', args);
+outlet.trigger('math/count/inc', args);
 console.log(args);
 // {count: 2}
 ```
@@ -45,7 +45,7 @@ Export the increment function from our plugin (index.js)
 module.exports = {
     increment: function(outlet, args) {
         // get 'step' config value from test plugin
-        var step = outlet.conf.get('device:test:increment:step');
+        var step = outlet.settings.get('device:test:increment:step');
 
         // init count if not passed
         args.count = args.count?args.count:0;
@@ -57,19 +57,20 @@ module.exports = {
     }
 };
 ```
-Declare our conf and workflow in our plugins package.json
+Declare our settings and 'wiring' in our plugins package.json
 ```
 {
   "name": "device-inc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "device": {
-    "conf": {
+    "settings": {
       "increment": {
         "step": 1
       }
     },
-    "workflows": [
+    "wiring": [
       {
+        "type": "workflow",
         "trigger": "math/count/inc",
         "action": "increment"
       }
