@@ -5,8 +5,8 @@ module.exports = {
 	unplug: function(outlet, args) {
 		console.log('Test UPLUGGED');
 	},
-	deviceConnect: function(outlet, args) {
-		console.log('Test saw '+args.device.name+' connected!');
+	devicePlugged: function(outlet, args) {
+		console.log('Test saw '+args.device.name+' plugged in!');
 	},
 	test: function(outlet, args) {
 		console.log('TEST ACTION');
@@ -15,7 +15,7 @@ module.exports = {
 		console.log('test1 increment');
 
 		// get 'step' config value from test plugin
-		var step = outlet.conf.get('device:test:increment:step');
+		var step = outlet.settings.get('device:test:increment:step');
 
 		// init count if not passed
 		args.count = args.count?args.count:0;

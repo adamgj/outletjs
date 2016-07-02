@@ -30,16 +30,16 @@ function Device(nameIn, dirIn)
 {
 	var name = nameIn;
 	var dir = dirIn; 
-	var description, conf, uses, listeners, workflows, keywords;
+	var description, settings, uses, listeners, wiring, keywords;
 
 	return({
 		name: name,
 		dir: dir,
 		description: description,
-		conf: conf,
+		settings: settings,
 		uses: uses,
 		listeners: listeners,
-		workflows: workflows,
+		wiring: wiring,
 		keywords: keywords,
 		load: load
 	});
@@ -83,7 +83,7 @@ function Device(nameIn, dirIn)
 		device = _.assign(device,
 			require(device.dir),
 			_.pick(package, ['name', 'version', 'description', 'keywords']),
-			_.pick(package.device, ['conf', 'uses', 'listeners', 'workflows'])
+			_.pick(package.device, ['settings', 'uses', 'listeners', 'wiring'])
 			);
 		
 		// remove prefix (ie. device-test -> test)
@@ -101,19 +101,19 @@ function Outlet(opt)
 {
 	var devices = [];
 	var registry = {};
-	var defaultConf = defaults;
+	var defaultSettings = defaults;
 
 	// init new event emitter
 	var handler = ee();
 
-	// init new configuration
-	var conf = require('nconf');
-	conf.overrides(opt).argv().env();
-	conf.file(path.join(process.cwd(), OUTLET_CONFIG));
-	conf.defaults(defaults);
+	// init new settingsiguration
+	var settings = require('nconf');
+	settings.overrides(opt).argv().env();
+	settings.file(path.join(process.cwd(), OUTLET_CONFIG));
+	settings.defaults(defaults);
 
 	return({
-		conf: conf,
+		settings: settings,
 		handler: handler,
 		devices: devices,
 		plug: plug,
@@ -171,8 +171,8 @@ function Outlet(opt)
 
 		_.forEach(stack, function(name) {
 			_.forEach(devices, function(device) {
-				if (_.isArray(device.workflows)) {
-					_.forEach(device.workflows, function(workflow) {
+				if (_.isArray(device.wiring)) {
+					_.forEach(device.wiring, function(workflow) {
 						// poly support for simple string def or object
 						var action = _.isString(workflow) ? workflow : workflow.action;
 						var trigger = _.isString(workflow) ? workflow : workflow.trigger;
@@ -226,12 +226,12 @@ function Outlet(opt)
 			});
 		}
 
-		// load current defaults conf
-		var dconf = defaultConf;
-		// namespace device conf under 'device' and name
-		dconf.device[device.name] = device.conf;
-		// apply new conf defaults
-		this.conf.defaults(dconf);
+		// load current defaults settings
+		var dsettings = defaultSettings;
+		// namespace device settings under 'device' and name
+		dsettings.device[device.name] = device.settings;
+		// apply new settings defaults
+		this.settings.defaults(dsettings);
 
 		// add device to registry
 		devices.push(device);

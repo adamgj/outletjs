@@ -1,12 +1,12 @@
 {
   "name": "device-test2",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "test2 device",
   "device": {
-    "conf": {
+    "settings": {
       "test": "value2"
     },
-    "workflows": [
+    "wiring": [
       {
         "trigger": "math/count/inc",
         "action": "increment"
@@ -15,8 +15,8 @@
     "listeners": [
       {
         "emit": "on",
-        "trigger": "connect",
-        "action": "deviceConnect"
+        "trigger": "plug",
+        "action": "devicePlugged"
       },
       {
         "trigger": "test",
