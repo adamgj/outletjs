@@ -6,7 +6,7 @@ var OUTLET_CONFIG = 'outlet.json';
 
 var defaults = {
 	'outlet' : {
-		'connect': {
+		'plug': {
 			'path': 'devices',
 			'node_modules': true,
 			'prefix': 'device-'
@@ -57,13 +57,13 @@ function Device(nameIn, dirIn)
 				throw new Error('Device name or path must be specified');
 			}
 
-			if (defaults.outlet.connect.node_modules) {
+			if (defaults.outlet.plug.node_modules) {
 				try {
 					requireDevice('/node_modules');
 				}
 				catch (err) {
 					try {
-						requireDevice(defaults.outlet.connect.path);
+						requireDevice(defaults.outlet.plug.path);
 					}
 					catch (e) {
 						console.error('Device not found: '+device.name);
@@ -71,7 +71,7 @@ function Device(nameIn, dirIn)
 				}
 			}
 			else {
-				requireDevice(defaults.outlet.connect.path);
+				requireDevice(defaults.outlet.plug.path);
 			}
 		}
 
@@ -87,7 +87,7 @@ function Device(nameIn, dirIn)
 			);
 		
 		// remove prefix (ie. device-test -> test)
-		device.name = _.trimStart(device.name, defaults.outlet.connect.prefix);
+		device.name = _.trimStart(device.name, defaults.outlet.plug.prefix);
 
 		_.forEach(device, function(prop) {
 			this[prop] = prop;
@@ -116,8 +116,8 @@ function Outlet(opt)
 		conf: conf,
 		handler: handler,
 		devices: devices,
-		connect: connect,
-		disconnect: disconnect,
+		plug: plug,
+		unplug: unplug,
 		trigger: trigger,
 		flow: flow
 	});
@@ -215,7 +215,7 @@ function Outlet(opt)
 		return this;
 	}
 
-	function connect(name) {
+	function plug(name) {
 		// find & require module
 		var device = Device(name).load();
 
@@ -237,18 +237,18 @@ function Outlet(opt)
 		devices.push(device);
 		registry[device.name] = devices.length-1;
 
-		// fire connect action if defined
-		if (_.isFunction(device.connect)) {
-			device.connect(this, {name: name, dir: device.dir});
+		// fire plug action if defined
+		if (_.isFunction(device.plug)) {
+			device.plug(this, {name: name, dir: device.dir});
 		}
 
-		// emit global connect event
-		trigger('connect', {device: device});
+		// emit global plug event
+		trigger('plug', {device: device});
 
 		return this;
 	}
 
-	function disconnect(name) {
+	function unplug(name) {
 		// find device
 		var device = devices[registry[name]];
 
@@ -268,13 +268,13 @@ function Outlet(opt)
 		this.devices = _.pullAt(devices, registry[name]+1);
 		delete registry[name];
 
-		// fire disconnect action if defined
-		if (_.isFunction(device.disconnect)) {
-			device.disconnect(this, {name: name, dir: device.dir});
+		// fire unplug action if defined
+		if (_.isFunction(device.unplug)) {
+			device.unplug(this, {name: name, dir: device.dir});
 		}
 
-		// emit global disconnect event
-		trigger('disconnect', {device: device});
+		// emit global unplug event
+		trigger('unplug', {device: device});
 
 		device = null;
 

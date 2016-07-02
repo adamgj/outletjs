@@ -1,9 +1,9 @@
 module.exports = {
-	connect: function(outlet, args) {
-		console.log('Test2 CONNECTED');
+	plug: function(outlet, args) {
+		console.log('Test2 PLUGGED IN');
 	},
-	disconnect: function(outlet, args) {
-		console.log('Test2 DISCONNECTED');
+	unplug: function(outlet, args) {
+		console.log('Test2 UNPLUGGED');
 	},
 	deviceConnect: function(outlet, args) {
 		console.log('Test2 saw '+args.device.name+' connected!');

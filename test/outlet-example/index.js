@@ -1,8 +1,8 @@
 var outlet = require('outletjs')();
 
 outlet
-	.connect('test')
-	.connect('test2')
+	.plug('test')
+	.plug('test2')
 	.trigger('test')
 	.trigger('one/two/three/four/five');
 
@@ -23,7 +23,7 @@ console.log(outlet.devices[0].name+
 console.log(outlet.conf.get('device:test'));
 console.log(outlet.conf.get('device:test2'));
 
-outlet.disconnect('test');
+outlet.unplug('test');
 
 // test device disconnected
 console.log(JSON.stringify(outlet.devices));
