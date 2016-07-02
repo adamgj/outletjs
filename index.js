@@ -30,7 +30,7 @@ function Device(nameIn, dirIn)
 {
 	var name = nameIn;
 	var dir = dirIn; 
-	var description, settings, uses, listeners, wiring, keywords;
+	var description, settings, uses, wiring, keywords;
 
 	return({
 		name: name,
@@ -38,7 +38,6 @@ function Device(nameIn, dirIn)
 		description: description,
 		settings: settings,
 		uses: uses,
-		listeners: listeners,
 		wiring: wiring,
 		keywords: keywords,
 		load: load
